@@ -12,7 +12,7 @@
     <style>
         body {
             font-family: 'Times New Roman', Times, serif;
-            background: linear-gradient(-45deg, #16425b, #274c77, #6096ba, #a3cef1);
+            background: linear-gradient(-45deg, #2f6690, #3a7ca5, #d9dcd6, #16425b);
             background-size: 400% 400%;
             animation: gradientAnimation 15s ease infinite;
         }
@@ -24,7 +24,7 @@
         }
 
         .container-bg {
-            background-color: #e7ecef;
+            background-color: #d9dcd6;
         }
 
         .overlay {
@@ -110,7 +110,7 @@
             </button>
         </div>
 
-        <button onclick="signOut()" class="profile-button mt-8 w-full text-left p-6 flex items-center justify-center bg-[#16425b] text-white hover:bg-[#81c3d7] transition-all duration-300 rounded-2xl shadow-lg font-bold text-2xl">
+        <button class="profile-button mt-8 w-full text-left p-6 flex items-center justify-center bg-[#16425b] text-white hover:bg-[#81c3d7] transition-all duration-300 rounded-2xl shadow-lg font-bold text-2xl">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-3 logout-icon" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M17 7l-1.41 1.41L18.17 11H9v2h9.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
             </svg>
@@ -126,87 +126,33 @@
         </div>
     </div>
 
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-    
     <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyAA-0m6frTwFh712zJOQv2CcblX-7o6G9Q",
-            authDomain: "vendora-9c567.firebaseapp.com",
-            projectId: "vendora-9c567",
-            storageBucket: "vendora-9c567.firebasestorage.app",
-            messagingSenderId: "278942178451",
-            appId: "1:278942178451:web:cc16ba00fc671058178166",
-            measurementId: "G-Z59E9PHSYL"
-        };
-
-        const app = firebase.initializeApp(firebaseConfig);
-        const auth = app.auth();
-        const db = app.firestore();
-        
-        let profileData = null;
-
-        // Function to fetch profile data from Firebase
-        async function fetchAndDisplayProfile() {
-            try {
-                // Assuming a single user profile document exists, for example with a fixed ID
-                const docRef = db.collection("users").doc("user-01"); 
-                const doc = await docRef.get();
-
-                if (doc.exists) {
-                    profileData = doc.data();
-                    console.log("Profile data fetched:", profileData);
-                } else {
-                    console.log("No such document!");
-                    profileData = {
-                        name: "N/A",
-                        employeeId: "N/A",
-                        contactNumber: "N/A",
-                        email: "N/A"
-                    };
-                }
-            } catch (error) {
-                console.error("Error fetching document:", error);
-                profileData = {
-                    name: "Error",
-                    employeeId: "Error",
-                    contactNumber: "Error",
-                    email: "Error"
-                };
+        // Placeholder data for each detail
+        const profileData = {
+            name: {
+                title: "Full Name",
+                content: "RACHEL"
+            },
+            employeeId: {
+                title: "Employee ID",
+                content: "EMP-001"
+            },
+            contactNumber: {
+                title: "Contact Number",
+                content: "9597779197"
+            },
+            email: {
+                title: "Email Address",
+                content: "emp1@gmail.com"
             }
-        }
+        };
 
         // Function to show the popup with details
         function showDetails(detailType) {
-            if (!profileData) {
-                alert("Profile data not loaded. Please try again or sign in.");
-                return;
-            }
-
-            const data = {
-                name: {
-                    title: "Full Name",
-                    content: profileData.name
-                },
-                employeeId: {
-                    title: "Employee ID",
-                    content: profileData.empid
-                },
-                contactNumber: {
-                    title: "Contact Number",
-                    content: profileData.contactnumber
-                },
-                email: {
-                    title: "Email Address",
-                    content: profileData.email
-                }
-            };
-
-            const detail = data[detailType];
-            if (detail) {
-                document.getElementById('popup-title').textContent = detail.title;
-                document.getElementById('popup-content').textContent = detail.content;
+            const data = profileData[detailType];
+            if (data) {
+                document.getElementById('popup-title').textContent = data.title;
+                document.getElementById('popup-content').textContent = data.content;
                 const overlay = document.getElementById('details-overlay');
                 overlay.style.display = 'flex';
                 // Trigger transition effect
@@ -227,20 +173,6 @@
                 overlay.style.display = 'none';
             }, 300); // Match transition duration
         }
-
-        // Function for logging out
-        async function signOut() {
-            try {
-                await auth.signOut();
-                alert("You have been signed out.");
-                // Redirect or update UI as needed
-            } catch (error) {
-                console.error("Sign out error:", error);
-            }
-        }
-
-        // Fetch data when the page loads
-        window.onload = fetchAndDisplayProfile;
     </script>
 </body>
 </html>
