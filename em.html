@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Times+New+Roman:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            background: linear-gradient(-45deg, #2f6690, #3a7ca5, #d9dcd6, #16425b);
+            background-size: 400% 400%;
+            animation: gradientAnimation 15s ease infinite;
+            color: #16425b;
+        }
+
+        @keyframes gradientAnimation {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        .header-bg {
+            background-image: linear-gradient(135deg, #2f6690, #3a7ca5);
+        }
+
+        .nav-link {
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            position: relative;
+            overflow: hidden;
+            border: 2px solid transparent;
+        }
+
+        .nav-link::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(0);
+            border-radius: 12px;
+            transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            z-index: 1;
+        }
+
+        .nav-link:hover::before {
+            transform: scale(1);
+        }
+
+        .nav-link:hover {
+            transform: translateY(-8px) rotate(-1deg);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            border: 2px solid #81c3d7;
+            background: #ffffff;
+        }
+
+        .nav-link .content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .nav-link .icon {
+            transition: transform 0.4s ease-in-out;
+        }
+
+        .nav-link:hover .icon {
+            transform: scale(1.2) rotate(5deg);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <div class="header-bg p-6 flex items-center justify-between shadow-lg">
+        <div class="flex items-center">
+            <a href="profilefinal.html" class="flex items-center text-[#16425b] hover:text-[#2c0703] transition-colors duration-300">
+                <i class="fas fa-user-circle text-4xl mr-4"></i>
+                <h1 class="text-3xl font-bold">EMPLOYEE DASHBOARD</h1>
+            </a>
+        </div>
+        <div class="flex items-center space-x-4 text-[#16425b]">
+            <i class="fas fa-cog text-2xl hover:text-[#2c0703] cursor-pointer transition-colors duration-300"></i>
+            <i class="fas fa-bell text-2xl hover:text-[#2c0703] cursor-pointer transition-colors duration-300"></i>
+        </div>
+    </div>
+
+    <div class="p-8 flex-grow">
+        <div class="text-center mb-10">
+            <h2 class="text-3xl font-bold text-[#16425b]">Welcome, Employee!</h2>
+            <p class="text-lg text-[#81c3d7] mt-2">Manage your tasks and track key metrics with ease.</p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+            <a href="stocks.html" class="nav-link bg-white p-6 rounded-2xl shadow-xl text-center flex flex-col items-center">
+                <div class="content">
+                    <i class="fas fa-warehouse text-4xl mb-3 text-[#81c3d7] icon"></i>
+                    <span class="font-bold text-xl text-[#16425b] block">STOCKS</span>
+                    <p class="text-sm text-[#16425b] mt-1">View and manage inventory levels</p>
+                </div>
+            </a>
+            <a href="bestselleremp.html" class="nav-link bg-white p-6 rounded-2xl shadow-xl text-center flex flex-col items-center">
+                <div class="content">
+                    <i class="fas fa-award text-4xl mb-3 text-[#81c3d7] icon"></i>
+                    <span class="font-bold text-xl text-[#16425b] block">BESTSELLERS ✨</span>
+                    <p class="text-sm text-[#16425b] mt-1">Discover top-performing products</p>
+                </div>
+            </a>
+            <a href="reschedule.html" class="nav-link bg-white p-6 rounded-2xl shadow-xl text-center flex flex-col items-center">
+                <div class="content">
+                    <i class="fas fa-calendar-alt text-4xl mb-3 text-[#81c3d7] icon"></i>
+                    <span class="font-bold text-xl text-[#16425b] block">AUTOMATIC RESCHEDULE</span>
+                    <p class="text-sm text-[#16425b] mt-1">Automate your scheduling tasks</p>
+                </div>
+            </a>
+            <a href="sale.html" class="nav-link bg-white p-6 rounded-2xl shadow-xl text-center flex flex-col items-center">
+                <div class="content">
+                    <i class="fas fa-tag text-4xl mb-3 text-[#81c3d7] icon"></i>
+                    <span class="font-bold text-xl text-[#16425b] block">SALE</span>
+                    <p class="text-sm text-[#16425b] mt-1">Manage ongoing sales and promotions</p>
+                </div>
+            </a>
+            <a href="analysis.html" class="nav-link bg-white p-6 rounded-2xl shadow-xl text-center flex flex-col items-center">
+                <div class="content">
+                    <i class="fas fa-chart-bar text-4xl mb-3 text-[#81c3d7] icon"></i>
+                    <span class="font-bold text-xl text-[#16425b] block">ANALYSIS</span>
+                    <p class="text-sm text-[#16425b] mt-1">View detailed business analytics</p>
+                </div>
+            </a>
+            <a href="invoice.html" class="nav-link bg-white p-6 rounded-2xl shadow-xl text-center flex flex-col items-center">
+                <div class="content">
+                    <i class="fas fa-file-invoice text-4xl mb-3 text-[#81c3d7] icon"></i>
+                    <span class="font-bold text-xl text-[#16425b] block">INVOICE</span>
+                    <p class="text-sm text-[#16425b] mt-1">Create and manage customer invoices</p>
+                </div>
+            </a>
+        </div>
+    </div>
+</body>
+</html>

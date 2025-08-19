@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vendora Login</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@400;500&display=swap');
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f6f0ea; /* Light, creamy background */
+            color: #3b3a30;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: #ffffff; /* White card */
+            padding: 45px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05); /* Subtle shadow */
+            width: 350px;
+            text-align: center;
+        }
+        .logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.8em;
+            font-weight: 700;
+            color: #5b4033; /* Darker brown from PDF */
+            margin-bottom: 30px;
+        }
+        input {
+            width: 100%;
+            padding: 14px;
+            margin: 12px 0;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            background-color: #ffffff;
+            color: #3b3a30;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        input:focus {
+            border-color: #5b4033;
+        }
+        button {
+            background-color: #5b4033;
+            border: none;
+            padding: 14px;
+            width: 100%;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            color: #ffffff;
+            font-size: 1em;
+            transition: background-color 0.2s;
+            letter-spacing: 1px;
+        }
+        button:hover {
+            background-color: #7c5a45;
+        }
+        .message {
+            margin-top: 15px;
+            font-size: 0.9em;
+            color: #d9534f; /* A clean error message color */
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="logo">Vendora</div>
+    <input type="email" id="email" placeholder="Email Address" />
+    <input type="password" id="password" placeholder="Password" />
+    <button onclick="login()">Log In</button>
+    <div class="message" id="message"></div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyAA-0m6frTwFh712zJOQv2CcblX-7o6G9Q",
+        authDomain: "vendora-9c567.firebaseapp.com",
+        projectId: "vendora-9c567",
+        storageBucket: "vendora-9c567.firebasestorage.app",
+        messagingSenderId: "278942178451",
+        appId: "1:278942178451:web:cc16ba00fc671058178166",
+        measurementId: "G-Z59E9PHSYL"
+    };
+
+    const app = firebase.initializeApp(firebaseConfig);
+    const auth = app.auth();
+    const db = app.firestore();
+
+    async function login() {
+        const email = document.getElementById("email").value.trim();
+        const password = document.getElementById("password").value.trim();
+        const msg = document.getElementById("message");
+        msg.textContent = "Logging in...";
+
+        try {
+            const userCredential = await auth.signInWithEmailAndPassword(email, password);
+            const uid = userCredential.user.uid;
+
+            const docRef = db.collection("users").doc(uid);
+            const docSnap = await docRef.get();
+
+            if (docSnap.exists) {
+                const data = docSnap.data();
+                const userName = data.name || 'User'; 
+                const userRole = data.role;
+                
+                // Store UID and Role in sessionStorage for other pages to use
+                sessionStorage.setItem('uid', uid);
+                sessionStorage.setItem('userRole', userRole);
+
+                alert(`Welcome, ${userName}! You are logged in as a ${userRole}.`); 
+                msg.textContent = `Welcome, ${userName}! Redirecting...`;
+                if (data.role === "owner") {
+                    window.location.href = "ownerdash.html";
+                } else if (data.role === "employee") {
+                    window.location.href = "em.html";
+                }
+            } else {
+                msg.textContent = "Login failed: Invalid email or password.";
+            }
+
+        } catch (error) {
+            msg.textContent = "Login failed: Invalid email or password.";
+            console.error(error);
+        }
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vendora | Reschedule</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@400;500&display=swap');
+
+        :root {
+            --primary-color: #16425b; /* Dark Blue */
+            --secondary-color: #a3cef1; /* Lighter Blue */
+            --accent-color: #6096ba; /* Medium Blue */
+            --danger-color: #d9534f;
+            --text-color: #16425b; /* Dark Blue */
+            --border-color: #6096ba; /* Medium Blue */
+            --light-bg: #ffffff;
+            --alert-bg: #d9dcd6;
+            --low-stock-bg: #6096ba;
+            --profit-green: #28a745;
+            --loss-red: #dc3545;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(-45deg, #16425b, #274c77, #6096ba, #a3cef1);
+            background-size: 400% 400%;
+            animation: gradientAnimation 15s ease infinite;
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            
+        }
+        
+        @keyframes gradientAnimation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .navbar {
+            background-color: var(--primary-color);
+            color: #ffffff;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 10px 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .navbar-item {
+            text-align: center;
+            font-size: 0.9em;
+        }
+        .navbar-item a {
+            color: #ffffff;
+            text-decoration: none;
+            display: block;
+            padding: 10px;
+            transition: background-color 0.2s;
+        }
+        .navbar-item a:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        .navbar-item i {
+            font-size: 1.5em;
+            margin-bottom: 5px;
+        }
+
+        .page-content {
+            margin-top: 80px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .main-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5em;
+            text-align: center;
+            color: var(--primary-color);
+            margin: 0 0 20px;
+            font-style: italic;
+        }
+
+        .reschedule-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            width: 100%;
+            padding-bottom: 50px;
+        }
+        
+        /* Product Card Animations */
+        .product-card {
+            background-color: var(--light-bg);
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out, opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+        }
+        
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Initial animation state */
+        .product-card.animate-in {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        /* Keyframes for page load animation */
+        @keyframes fadeInSlideUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Keyframes for button pulse */
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+        
+        /* Keyframes for card removal */
+        @keyframes fadeOutUp {
+            from {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+        }
+
+        .product-card.fade-out-up {
+            animation: fadeOutUp 0.5s ease-in-out forwards;
+        }
+
+        /* Styles and Animations for Confetti */
+        .confetti-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 9999;
+        }
+        
+        .wrapper-confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #28a745; /* A bright green color */
+            opacity: 0;
+            will-change: transform, opacity;
+        }
+
+        @keyframes confetti-fall {
+            0% {
+                opacity: 0;
+                transform: translateY(0) rotateZ(0deg);
+            }
+            10% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(100vh) rotateZ(720deg);
+            }
+        }
+
+        .product-card h3 {
+            font-size: 1.2em;
+            margin: 10px 0;
+            color: var(--primary-color);
+        }
+        
+        .product-card p {
+            font-size: 0.9em;
+            color: var(--text-color);
+            margin: 5px 0;
+        }
+
+        .product-image {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        
+        .quantity-input-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .quantity-input-container label {
+            font-size: 0.9em;
+            color: var(--text-color);
+            margin-bottom: 5px;
+        }
+        
+        .quantity-input {
+            width: 80px;
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            text-align: center;
+            font-size: 1em;
+        }
+
+        .reschedule-button {
+            background-color: var(--accent-color);
+            color: var(--primary-color);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: bold;
+            transition: background-color 0.2s ease-in-out, transform 0.3s ease-in-out;
+        }
+
+        .reschedule-button:hover {
+            background-color: #5086a9;
+        }
+
+        .reschedule-button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+            color: #666;
+            animation: none; /* Remove pulse animation when disabled */
+        }
+        
+        .reschedule-button.pulse-animation {
+            animation: pulse 1.5s infinite;
+        }
+
+        .placeholder-text {
+            text-align: center;
+            font-style: italic;
+            color: #888;
+            margin-top: 20px;
+        }
+
+        /* Footer Styles */
+        .footer {
+            background-color: var(--primary-color);
+            color: #ffffff;
+            padding: 40px 20px;
+            margin-top: 40px;
+        }
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .footer-section {
+            flex: 1;
+            padding: 10px;
+            min-width: 200px;
+        }
+        .footer-section h4 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.4em;
+            border-bottom: 2px solid #ffffff;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        .footer-section ul {
+            list-style: none;
+            padding: 0;
+        }
+        .footer-section ul li {
+            margin-bottom: 10px;
+        }
+        .footer-section a {
+            color: #ffffff;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .footer-section a:hover {
+            color: #e0e0e0;
+        }
+        .footer-contact {
+            text-align: right;
+        }
+
+    </style>
+</head>
+<body>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
+<div class="navbar">
+    <div class="navbar-item"><a href="em.html"><i class="fas fa-home"></i><br>home</a></div>
+    
+</div>
+
+<div class="page-content">
+    <h2 class="main-title">RESCHEDULE REQUESTS</h2>
+    <div id="reschedule-grid" class="reschedule-grid">
+        <p class="placeholder-text" id="loading-placeholder">Loading stocks...</p>
+    </div>
+</div>
+
+<footer class="footer">
+    <div class="footer-content">
+        <div class="footer-section">
+            <h4>Vendora</h4>
+            <ul>
+                <li><a href="#">About Us</a></li>
+                <li><a href="#">Careers</a></li>
+                <li><a href="#">Press</a></li>
+            </ul>
+        </div>
+        <div class="footer-section">
+            <h4>Help</h4>
+            <ul>
+                <li><a href="#">Contact Us</a></li>
+                <li><a href="#">FAQ</a></li>
+                <li><a href="#">Shipping</a></li>
+            </ul>
+        </div>
+        <div class="footer-section footer-contact">
+            <h4>Contact</h4>
+            <p>For any help, you may call us at</p>
+            <p>1800-267-4444</p>
+            <p>(Monday to Saturday, 8AM to 10PM)</p>
+        </div>
+    </div>
+</footer>
+
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyAA-0m6frTwFh712zJOQv2CcblX-7o6G9Q",
+        authDomain: "vendora-9c567.firebaseapp.com",
+        projectId: "vendora-9c567",
+        storageBucket: "vendora-9c567.firebasestorage.app",
+        messagingSenderId: "278942178451",
+        appId: "1:278942178451:web:cc16ba00fc671058178166",
+        measurementId: "G-Z59E9PHSYL"
+    };
+
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = app.firestore();
+    const rescheduleGrid = document.getElementById('reschedule-grid');
+    const loadingPlaceholder = document.getElementById('loading-placeholder');
+
+    // Map product names to image URLs
+    const imageMap = {
+        'milk packet(500ml)': 'https://i.postimg.cc/k47tXm3s/cavins-milk.webp',
+        'oreo biscuits': 'https://i.postimg.cc/gct0g6kw/or.webp',
+        'aavin milk packet(500ml)': 'https://i.postimg.cc/3wYCRWJj/aavi.webp',
+        'munch chocolate':'https://i.postimg.cc/fyGRbtZM/munch.webp',
+        'biscuit':'https://i.postimg.cc/63D0fKNY/bisci.webp',
+        'coca cola': 'https://i.postimg.cc/kgYtpD0Y/coca-cola.webp',
+        'dairy milk chocolate': 'https://i.postimg.cc/852Rns6g/dairy-milk.jpg',
+        'cavins milk packet': 'https://i.postimg.cc/zBN6cBSR/cavins-milk.webp',
+        'apple(per kg)': 'https://i.postimg.cc/dtCmbRsk/apple.webp',
+        'miranda(250ml)':'https://i.postimg.cc/NfNwb2ZF/miri.webp',
+        'jimjam biscuits':'https://i.postimg.cc/7P2DHLCQ/jimjam.webp',
+        'banana(100gms)': 'https://i.postimg.cc/FFLLz92w/banana.webp',
+        'snickers chocolate':'https://i.postimg.cc/020TjK9Z/snickers.webp',
+        'frooti(200ml)':'https://i.postimg.cc/gkFSvzg5/frooti.webp'
+    };
+    
+    async function fetchProductsForReschedule() {
+        try {
+            const productsSnapshot = await db.collection('products').get();
+            
+            const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+            
+            const products = [];
+
+            productsSnapshot.forEach(doc => {
+                const productData = doc.data();
+                const lastUpdated = productData.lastUpdated ? productData.lastUpdated.toDate() : new Date(0);
+                
+                // Only push products that were last updated over 30 days ago
+                if (lastUpdated < thirtyDaysAgo) {
+                    products.push({ id: doc.id, ...productData });
+                }
+            });
+
+            renderRescheduleCards(products);
+
+        } catch (error) {
+            console.error("Error fetching products:", error);
+            rescheduleGrid.innerHTML = '<p class="placeholder-text">Error loading products. Please try again later.</p>';
+        }
+    }
+
+    function renderRescheduleCards(products) {
+        rescheduleGrid.innerHTML = '';
+        if (products.length === 0) {
+            rescheduleGrid.innerHTML = '<p class="placeholder-text">All stocks are up-to-date.</p>';
+            return;
+        }
+
+        products.forEach((product, index) => {
+            const card = document.createElement('div');
+            card.classList.add('product-card', 'animate-in');
+
+            // Log the product name to the console to help with debugging
+            console.log(`Product name from database: ${product.item}`);
+
+            // Make the lookup case-insensitive for robustness
+            const imageUrl = imageMap[product.item.toLowerCase()] || 'https://i.postimg.cc/t4G3g4zJ/placeholder.png';
+
+            card.innerHTML = `
+                <img src="${imageUrl}" alt="${product.item}" class="product-image">
+                <h3>${product.item}</h3>
+                <p>Last Updated: ${product.lastUpdated ? product.lastUpdated.toDate().toLocaleDateString() : 'N/A'}</p>
+                <div class="quantity-input-container">
+                    <label for="quantity-${product.id}">Quantity:</label>
+                    <input type="number" id="quantity-${product.id}" class="quantity-input" value="1" min="1">
+                </div>
+                <button class="reschedule-button" data-product-id="${product.id}">Reschedule</button>
+            `;
+            rescheduleGrid.appendChild(card);
+            
+            // Trigger fade-in animation with a delay
+            setTimeout(() => {
+                card.style.animation = `fadeInSlideUp 0.5s ease-out forwards`;
+            }, index * 100);
+        });
+
+        document.querySelectorAll('.reschedule-button').forEach(button => {
+            button.addEventListener('click', handleRescheduleClick);
+        });
+    }
+
+    function createConfetti(x, y) {
+        const confettiContainer = document.createElement('div');
+        confettiContainer.classList.add('confetti-container');
+        document.body.appendChild(confettiContainer);
+        
+        const numWrappers = 30; // Number of confetti pieces
+        for (let i = 0; i < numWrappers; i++) {
+            const wrapper = document.createElement('div');
+            wrapper.classList.add('wrapper-confetti');
+            
+            // Randomly position the confetti around the button's location
+            const startX = x + (Math.random() - 0.5) * 50;
+            const startY = y + (Math.random() - 0.5) * 50;
+            
+            wrapper.style.left = `${startX}px`;
+            wrapper.style.top = `${startY}px`;
+            
+            const animationDelay = Math.random() * 0.5; // Random delay for a scattered effect
+            wrapper.style.animation = `confetti-fall 1.5s ease-out ${animationDelay}s forwards`;
+            
+            confettiContainer.appendChild(wrapper);
+        }
+        
+        // Remove the confetti container after the animation is finished
+        setTimeout(() => {
+            confettiContainer.remove();
+        }, 2000); // 2 seconds should be enough for the animation to complete
+        }
+
+    async function handleRescheduleClick(event) {
+        const button = event.target;
+        
+        button.disabled = true;
+        button.textContent = 'Sending...';
+        button.classList.add('pulse-animation');
+
+        try {
+            const productCard = button.closest('.product-card');
+            const productName = productCard.querySelector('h3').textContent;
+            const quantity = parseInt(productCard.querySelector('.quantity-input').value, 10);
+            
+            // Get the button's position to start the confetti from there
+            const rect = button.getBoundingClientRect();
+            createConfetti(rect.left + rect.width / 2, rect.top + rect.height / 2);
+
+            button.textContent = 'Done!';
+            button.classList.remove('pulse-animation');
+            
+            // Add fade-out animation and then remove the card
+            productCard.classList.add('fade-out-up');
+            setTimeout(() => {
+                productCard.remove();
+            }, 500); // Wait for the animation to finish
+            
+            alert(`Request placed successfully for ${productName} with quantity ${quantity}.`);
+
+        } catch (error) {
+            console.error("Error with reschedule request:", error);
+            button.textContent = 'Failed';
+            button.disabled = false;
+            button.classList.remove('pulse-animation');
+            alert('Failed to process request. Please try again.');
+        }
+    }
+
+    // Initial data load
+    fetchProductsForReschedule();
+</script>
+
+</body>
+</html>

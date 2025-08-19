@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vendora | Analysis</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@400;500&display=swap');
+
+        :root {
+            --primary-color: #274c77; /* Dark Blue */
+            --secondary-color: #a3cef1; /* Lighter Blue */
+            --accent-color: #e7ecef; /* Light Gray */
+            --danger-color: #d9534f; /* Reddish for reorder */
+            --text-color: #3b3a30; /* Dark text */
+            --border-color: #6096ba; /* Blue border */
+            --light-bg: #ffffff; /* White card background */
+            --profit-green: #28a745;
+            --loss-red: #dc3545;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            /* Background animation from STOCKS.html */
+            background: linear-gradient(-45deg, #e7ecef, #a3cef1, #6096ba, #274c77);
+            background-size: 400% 400%;
+            animation: gradientAnimation 15s ease infinite;
+        }
+
+        @keyframes gradientAnimation {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        .navbar {
+            background-color: var(--border-color); /* Lighter blue */
+            color: #ffffff;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 10px 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .navbar-item {
+            text-align: center;
+            font-size: 0.9em;
+        }
+        .navbar-item a {
+            color: #ffffff;
+            text-decoration: none;
+            display: block;
+            padding: 10px;
+            transition: background-color 0.2s;
+        }
+        .navbar-item a:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        .navbar-item i {
+            font-size: 1.5em;
+            margin-bottom: 5px;
+        }
+
+        .page-content {
+            margin-top: 80px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .main-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5em;
+            text-align: center;
+            color: var(--primary-color);
+            margin: 0 0 20px;
+            font-style: italic;
+        }
+        
+        .dashboard-container {
+            width: 100%;
+            max-width: 1200px;
+            min-height: 500px;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            background-color: var(--light-bg);
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+        
+        .filter-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 500px;
+        }
+        
+        .filter-container label {
+            font-family: 'Roboto', sans-serif;
+            font-weight: 500;
+        }
+
+        .filter-container select {
+            padding: 8px 12px;
+            font-size: 1em;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            background-color: var(--accent-color);
+            cursor: pointer;
+            flex-grow: 1;
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+        
+        @media (min-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 2fr 1fr;
+            }
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 400px;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        
+        .summary-container {
+            background-color: var(--accent-color);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .summary-container h3 {
+            font-family: 'Playfair Display', serif;
+            color: var(--primary-color);
+            margin-top: 0;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+        
+        .summary-item {
+            margin-bottom: 15px;
+        }
+        
+        .summary-item p {
+            margin: 0;
+            font-size: 1.1em;
+        }
+        
+        .summary-label {
+            font-weight: bold;
+            color: var(--text-color);
+        }
+        
+        .total-units-sold, .total-items, .avg-units-sold {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: var(--profit-green);
+        }
+
+        .summary-section-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .summary-box {
+            background-color: var(--accent-color);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .summary-box h4 {
+            font-family: 'Roboto', sans-serif;
+            font-size: 1em;
+            margin: 0 0 5px;
+            color: var(--primary-color);
+        }
+        
+        .summary-box .value {
+            font-size: 1.8em;
+            font-weight: bold;
+        }
+        
+        .total-items-value {
+            color: var(--primary-color);
+        }
+
+        .avg-units-value {
+            color: var(--border-color);
+        }
+
+        @media (min-width: 768px) {
+            .summary-section-container {
+                flex-direction: row;
+                justify-content: space-between;
+            }
+            .summary-box {
+                flex: 1;
+            }
+        }
+
+        /* Data table styles */
+        .data-table-container {
+            width: 100%;
+            margin-top: 20px;
+            overflow-x: auto;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .data-table th, .data-table td {
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            text-align: left;
+        }
+        
+        .data-table th {
+            background-color: var(--primary-color);
+            color: #ffffff;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+        
+        .data-table tr:nth-child(even) {
+            background-color: var(--secondary-color);
+        }
+        
+        .data-table tr:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        /* Footer Styles */
+        .footer {
+            background-color: var(--primary-color);
+            color: #ffffff;
+            padding: 40px 20px;
+            margin-top: 40px;
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .footer-section {
+            flex: 1;
+            padding: 10px;
+            min-width: 200px;
+        }
+
+        .footer-section h4 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.4em;
+            border-bottom: 2px solid #ffffff;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .footer-section ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .footer-section ul li {
+            margin-bottom: 10px;
+        }
+
+        .footer-section a {
+            color: #ffffff;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer-section a:hover {
+            color: #e0e0e0;
+        }
+
+        .footer-contact {
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+<div class="navbar">
+    <div class="navbar-item"><a href="ownerdash.html"><i class="fas fa-home"></i><br>home</a></div>
+    
+</div>
+
+<div class="page-content">
+    <h2 class="main-title">DATA ANALYSIS</h2>
+    <div class="summary-section-container">
+        <div class="summary-box">
+            <h4>Total Items</h4>
+            <p id="totalItems" class="value total-items-value"></p>
+        </div>
+        <div class="summary-box">
+            <h4>Avg. Units Sold</h4>
+            <p id="avgUnitsSold" class="value avg-units-value"></p>
+        </div>
+    </div>
+    <div class="dashboard-container">
+        <div class="filter-container">
+            <label for="category-filter">Filter Products:</label>
+            <select id="category-filter">
+                <option value="All">All Categories</option>
+                <option value="Dairy">Dairy</option>
+                <option value="Bakery">Bakery</option>
+                <option value="Snacks">Snacks</option>
+                <option value="Beverages">Beverages</option>
+                <option value="fruits">Fruits</option>
+                <option value="vegetables">Vegetables</option>
+                <option value="Frozen">Frozen Foods</option>
+            </select>
+        </div>
+        <div class="dashboard-grid">
+            <div class="chart-container">
+                <canvas id="productSalesChart"></canvas>
+            </div>
+            <div class="summary-container">
+                <h3>Key Metrics</h3>
+                <div class="summary-item">
+                    <p class="summary-label">Total Units Sold:</p>
+                    <p id="totalUnits" class="total-units-sold"></p>
+                </div>
+                <div class="summary-item">
+                    <p class="summary-label">Most Moved Item:</p>
+                    <p id="mostMovedItem"></p>
+                </div>
+                <div class="summary-item">
+                    <p class="summary-label">Least Moved Item:</p>
+                    <p id="leastMovedItem"></p>
+                </div>
+                <div class="summary-item">
+                    <p class="summary-label">Sales by Category:</p>
+                    <div class="chart-container" style="height: 200px;">
+                        <canvas id="categorySalesChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="data-table-container">
+            <h3>Detailed Sales Data</h3>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th>Quantity Sold</th>
+                    </tr>
+                </thead>
+                <tbody id="dataTableBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<footer class="footer">
+    <div class="footer-content">
+        <div class="footer-section">
+            <h4>Vendora</h4>
+            <ul>
+                <li><a href="#">About Us</a></li>
+                <li><a href="#">Careers</a></li>
+                <li><a href="#">Press</a></li>
+            </ul>
+        </div>
+        <div class="footer-section">
+            <h4>Help</h4>
+            <ul>
+                <li><a href="#">Contact Us</a></li>
+                <li><a href="#">FAQ</a></li>
+                <li><a href="#">Shipping</a></li>
+            </ul>
+        </div>
+        <div class="footer-section footer-contact">
+            <h4>Contact</h4>
+            <p>For any help, you may call us at</p>
+            <p>1800-267-4444</p>
+            <p>(Monday to Saturday, 8AM to 10PM)</p>
+        </div>
+    </div>
+</footer>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyAA-0m6frTwFh712zJOQv2CcblX-7o6G9Q",
+        authDomain: "vendora-9c567.firebaseapp.com",
+        projectId: "vendora-9c567",
+        storageBucket: "vendora-9c567.firebasestorage.app",
+        messagingSenderId: "278942178451",
+        appId: "1:278942178451:web:cc16ba00fc671058178166",
+        measurementId: "G-Z59E9PHSYL"
+    };
+
+    const app = firebase.initializeApp(firebaseConfig);
+    const auth = app.auth();
+    const db = app.firestore();
+    
+    const categoryMap = {
+        'cavins milk packet': 'Dairy',
+        'aavin milk packet(500ml)': 'Dairy',
+        'Oreo biscuits': 'Bakery',
+        'Jimjam biscuits': 'Bakery',
+        'biscuit': 'Bakery',
+        'coca cola': 'Beverages',
+        'dairy milk chocolate': 'Snacks',
+        'munch chocolate': 'Snacks',
+        'Snickers chocolate': 'Snacks',
+        'Frooti': 'Beverages',
+        'apple(per kg)': 'fruits',
+        'banana(100gms)': 'fruits',
+        'Miranda(500ml)': 'Beverages'
+    };
+    
+    let allSalesData = {};
+    
+    // Initialize Chart instances
+    let productSalesChart;
+    let categorySalesChart;
+
+    async function fetchData() {
+        try {
+            const revenueRef = db.collection('stocks');
+            const revenueSnapshot = await revenueRef.get();
+            
+            allSalesData = {};
+
+            revenueSnapshot.forEach(doc => {
+                const entry = doc.data();
+                const item = entry.name;
+                const quantity = parseFloat(entry.unitssold) || 0;
+
+                if (allSalesData[item]) {
+                    allSalesData[item] += quantity;
+                } else {
+                    allSalesData[item] = quantity;
+                }
+            });
+
+            renderDashboard();
+
+        } catch (error) {
+            console.error("Error fetching data:", error);
+        }
+    }
+
+    function renderDashboard() {
+        const categoryFilter = document.getElementById('category-filter');
+        const selectedCategory = categoryFilter.value;
+        let dataToRender = [];
+
+        if (selectedCategory === 'All') {
+            dataToRender = Object.entries(allSalesData).map(([item, quantity]) => ({ item, quantity }));
+        } else {
+            dataToRender = Object.entries(allSalesData)
+                .filter(([item, quantity]) => categoryMap[item] === selectedCategory)
+                .map(([item, quantity]) => ({ item, quantity }));
+        }
+        
+        dataToRender.sort((a, b) => b.quantity - a.quantity);
+        
+        const totalItems = dataToRender.length;
+        const totalUnitsSold = dataToRender.reduce((sum, item) => sum + item.quantity, 0);
+        const avgUnitsSold = totalItems > 0 ? totalUnitsSold / totalItems : 0;
+
+        document.getElementById('totalUnits').textContent = totalUnitsSold.toFixed(0);
+        document.getElementById('totalItems').textContent = totalItems;
+        document.getElementById('avgUnitsSold').textContent = avgUnitsSold.toFixed(2);
+
+
+        if (dataToRender.length > 0) {
+            const mostMoved = dataToRender[0];
+            const leastMoved = dataToRender[dataToRender.length - 1];
+            document.getElementById('mostMovedItem').textContent = `${mostMoved.item} (${mostMoved.quantity} units)`;
+            document.getElementById('leastMovedItem').textContent = `${leastMoved.item} (${leastMoved.quantity} units)`;
+        } else {
+            document.getElementById('mostMovedItem').textContent = 'N/A';
+            document.getElementById('leastMovedItem').textContent = 'N/A';
+        }
+        
+        renderProductSalesChart(dataToRender);
+        renderCategorySalesChart();
+        renderDataTable(dataToRender);
+    }
+    
+    function renderProductSalesChart(data) {
+        const ctx = document.getElementById('productSalesChart').getContext('2d');
+        const labels = data.map(item => item.item);
+        const quantities = data.map(item => item.quantity);
+
+        if (productSalesChart) {
+            productSalesChart.destroy();
+        }
+
+        productSalesChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Units Sold',
+                    data: quantities,
+                    backgroundColor: 'rgba(96, 150, 186, 0.6)',
+                    borderColor: 'rgba(39, 76, 119, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    }
+
+    function renderCategorySalesChart() {
+        const ctx = document.getElementById('categorySalesChart').getContext('2d');
+        const categorySales = {};
+
+        Object.entries(allSalesData).forEach(([item, quantity]) => {
+            const category = categoryMap[item] || 'Other';
+            if (categorySales[category]) {
+                categorySales[category] += quantity;
+            } else {
+                categorySales[category] = quantity;
+            }
+        });
+
+        const labels = Object.keys(categorySales);
+        const data = Object.values(categorySales);
+        
+        const backgroundColors = [
+            '#274c77',
+            '#6096ba',
+            '#a3cef1',
+            '#e7ecef',
+            '#bbd6f2',
+            '#8bafda',
+            '#5d86b7'
+        ];
+
+        if (categorySalesChart) {
+            categorySalesChart.destroy();
+        }
+
+        categorySalesChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Sales by Category',
+                    data: data,
+                    backgroundColor: backgroundColors,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+            }
+        });
+    }
+    
+    function renderDataTable(data) {
+        const tableBody = document.getElementById('dataTableBody');
+        tableBody.innerHTML = '';
+        
+        data.forEach(item => {
+            const row = document.createElement('tr');
+            
+            const itemCell = document.createElement('td');
+            itemCell.textContent = item.item;
+            row.appendChild(itemCell);
+            
+            const quantityCell = document.createElement('td');
+            quantityCell.textContent = item.quantity.toFixed(0);
+            row.appendChild(quantityCell);
+            
+            tableBody.appendChild(row);
+        });
+    }
+
+    document.getElementById('category-filter').addEventListener('change', renderDashboard);
+
+    fetchData();
+</script>
+
+</body>
+</html>

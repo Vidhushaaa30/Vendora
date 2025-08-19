@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vendora | Request Status</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Times+New+Roman:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
+        import { getFirestore, collection, query, onSnapshot, orderBy } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-firestore.js";
+        
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAA-0m6frTwFh712zJOQv2CcblX-7o6G9Q",
+            authDomain: "vendora-9c567.firebaseapp.com",
+            projectId: "vendora-9c567",
+            storageBucket: "vendora-9c567.firebasestorage.app",
+            messagingSenderId: "278942178451",
+            appId: "1:278942178451:web:cc16ba00fc671058178166",
+            measurementId: "G-Z59E9PHSYL"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const requestsTableBody = document.getElementById('requests-table-body');
+        const placeholder = document.getElementById('requests-placeholder');
+
+        // Listen for all requests in real-time
+        const q = query(collection(db, "requests"), orderBy("timestamp", "desc"));
+
+        const unsubscribe = onSnapshot(q, (querySnapshot) => {
+            if (querySnapshot.empty) {
+                placeholder.textContent = 'No stock requests found.';
+                requestsTableBody.innerHTML = '';
+            } else {
+                placeholder.textContent = '';
+                requestsTableBody.innerHTML = '';
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const row = document.createElement('tr');
+                    row.classList.add('bg-white', 'border-b', 'hover:bg-gray-50', 'fade-in');
+                    
+                    let statusClass = '';
+                    let statusText = '';
+                    if (data.status === 'approved') {
+                        statusClass = 'text-green-600 font-semibold';
+                        statusText = 'Approved';
+                    } else if (data.status === 'disapproved') {
+                        statusClass = 'text-red-600 font-semibold';
+                        statusText = 'Disapproved';
+                    } else {
+                        statusClass = 'text-yellow-600 font-semibold';
+                        statusText = 'Pending';
+                    }
+
+                    row.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${data.name}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${data.quantity}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm ${statusClass}">${statusText}</td>
+                    `;
+                    requestsTableBody.appendChild(row);
+                });
+            }
+        });
+    </script>
+    <style>
+        body {
+            font-family: 'Times New Roman', serif;
+            background-color: #eef2f6;
+            color: #333;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: auto;
+            text-align: center;
+        }
+
+        h1 {
+            color: #274c77;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .requests-table {
+            min-width: 100%;
+            white-space: nowrap;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 12px 15px;
+        }
+
+        thead tr {
+            background-color: #274c77;
+            color: #ffffff;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .placeholder-text {
+            color: #666;
+            font-style: italic;
+            margin-top: 50px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="flex items-center justify-center mb-6">
+        <i class="fa-solid fa-clipboard-list text-5xl text-[#274c77] mr-4"></i>
+        <h1>REQUEST STATUS</h1>
+    </div>
+    <p id="requests-placeholder" class="placeholder-text">Loading requests...</p>
+    
+    <div class="table-container mt-8">
+        <table class="requests-table w-full text-sm text-left text-gray-500">
+            <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                <tr>
+                    <th scope="col" class="px-6 py-3">Item Name</th>
+                    <th scope="col" class="px-6 py-3">Quantity</th>
+                    <th scope="col" class="px-6 py-3">Status</th>
+                </tr>
+            </thead>
+            <tbody id="requests-table-body">
+                </tbody>
+        </table>
+    </div>
+</div>
+
+</body>
+</html>

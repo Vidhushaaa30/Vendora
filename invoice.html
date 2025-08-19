@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vendora - Employee Bill Upload</title>
+    <style>
+        /* General Body & Container Styling */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #e7f2ff; /* Light blue background */
+            color: #16425b; /* Dark blue text */
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+
+        .app-container {
+            background-color: #ffffff;
+            width: 90%;
+            max-width: 500px;
+            margin-top: 20px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        /* Header & Titles */
+        h1 {
+            color: #274c77; /* A solid blue */
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        /* Input & Form Styling */
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #6096ba; /* Blue border */
+            border-radius: 4px;
+            box-sizing: border-box; /* Ensures padding doesn't affect width */
+        }
+
+        textarea {
+            resize: vertical;
+            height: 100px;
+        }
+
+        /* Buttons & File Input */
+        .btn-primary {
+            width: 100%;
+            padding: 12px;
+            background-color: #3498db; /* Blue button */
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .btn-primary:hover {
+            background-color: #2980b9; /* Darker blue on hover */
+        }
+
+        .hidden-file-input {
+            display: none;
+        }
+
+        .upload-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            border: 2px dashed #6096ba; /* Blue dashed border */
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+        .upload-area:hover {
+            background-color: #f0f8ff; /* Lighter blue on hover */
+        }
+
+        /* Image Preview */
+        #bill-preview {
+            max-width: 100%;
+            height: auto;
+            border-radius: 4px;
+            margin-top: 15px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Status & Messages */
+        #status-message {
+            text-align: center;
+            margin-top: 15px;
+            font-weight: bold;
+            color: #2ecc71; /* Green for success (retained from original for contrast) */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <h1>Vendora - Upload Bill</h1>
+
+        <div class="upload-area" onclick="document.getElementById('file-input').click()">
+            <p>Click to Scan or Upload Bill</p>
+            <input type="file" id="file-input" class="hidden-file-input" accept="image/*" capture="camera">
+        </div>
+        
+        <img id="bill-preview" src="" alt="Bill Preview" style="display:none;">
+
+        <form id="bill-form" style="display:none;">
+            <div class="form-group">
+                <label for="vendor">Vendor Name</label>
+                <input type="text" id="vendor" name="vendor" placeholder="e.g., Starbucks" required>
+            </div>
+            <div class="form-group">
+                <label for="date">Date of Purchase</label>
+                <input type="text" id="date" name="date" placeholder="e.g., 2025-08-19" required>
+            </div>
+            <div class="form-group">
+                <label for="total">Total Amount ($)</label>
+                <input type="number" id="total" name="total" step="0.01" placeholder="e.g., 15.50" required>
+            </div>
+            <div class="form-group">
+                <label for="notes">Notes (Optional)</label>
+                <textarea id="notes" name="notes" placeholder="e.g., Lunch with client John Doe"></textarea>
+            </div>
+            <button type="submit" class="btn-primary">Submit Bill</button>
+        </form>
+
+        <p id="status-message"></p>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const fileInput = document.getElementById('file-input');
+            const billPreview = document.getElementById('bill-preview');
+            const billForm = document.getElementById('bill-form');
+            const statusMessage = document.getElementById('status-message');
+
+            fileInput.addEventListener('change', (event) => {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        billPreview.src = e.target.result;
+                        billPreview.style.display = 'block';
+                        billForm.style.display = 'block';
+                    };
+                    reader.readAsDataURL(file);
+
+                    // --- MOCK OCR EXTRACTION ---
+                    // In a real app, you would send the file to a server here for OCR processing.
+                    // This is a simple mock to simulate the result.
+                    const mockOCRData = {
+                        vendor: 'Coffee Shop',
+                        date: '2025-08-19',
+                        total: 12.75
+                    };
+                    populateForm(mockOCRData);
+                    statusMessage.textContent = 'Bill scanned successfully. Please verify details.';
+                    statusMessage.style.color = '#2ecc71';
+                }
+            });
+
+            function populateForm(data) {
+                document.getElementById('vendor').value = data.vendor || '';
+                document.getElementById('date').value = data.date || '';
+                document.getElementById('total').value = data.total || '';
+            }
+
+            billForm.addEventListener('submit', (event) => {
+                event.preventDefault();
+                
+                // Here, you would collect the form data and send it to your backend API
+                const formData = new FormData(billForm);
+                const billData = Object.fromEntries(formData.entries());
+
+                console.log('Submitting Bill Data:', billData);
+                
+                statusMessage.textContent = 'Bill submitted successfully!';
+                statusMessage.style.color = '#3498db';
+
+                // Reset the form and preview after submission (for demonstration)
+                setTimeout(() => {
+                    billPreview.style.display = 'none';
+                    billForm.style.display = 'none';
+                    statusMessage.textContent = '';
+                    billForm.reset();
+                }, 2000);
+            });
+        });
+    </script>
+
+</body>
+</html>

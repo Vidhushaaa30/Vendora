@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vendora | Stock Requests</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Times+New+Roman:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
+        import { getFirestore, collection, addDoc, doc, updateDoc, query, where, getDocs, onSnapshot, orderBy, getDoc } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-firestore.js";
+        
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAA-0m6frTwFh712zJOQv2CcblX-7o6G9Q",
+            authDomain: "vendora-9c567.firebaseapp.com",
+            projectId: "vendora-9c567",
+            storageBucket: "vendora-9c567.firebasestorage.app",
+            messagingSenderId: "278942178451",
+            appId: "1:278942178451:web:cc16ba00fc671058178166",
+            measurementId: "G-Z59E9PHSYL"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const requestsTableBody = document.getElementById('requests-table-body');
+        const placeholder = document.getElementById('requests-placeholder');
+
+        // Listen for pending requests in real-time
+        const q = query(collection(db, "requests"), where("status", "==", "pending"), orderBy("timestamp", "desc"));
+
+        const unsubscribe = onSnapshot(q, (querySnapshot) => {
+            if (querySnapshot.empty) {
+                placeholder.textContent = 'No pending stock requests.';
+                requestsTableBody.innerHTML = '';
+            } else {
+                placeholder.textContent = '';
+                requestsTableBody.innerHTML = '';
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const requestId = doc.id;
+                    const row = document.createElement('tr');
+                    row.classList.add('bg-white', 'border-b', 'hover:bg-gray-50');
+                    row.setAttribute('data-request-id', requestId);
+                    
+                    row.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${data.name}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${data.quantity}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <button class="btn-approve" data-request-id="${requestId}">Approve</button>
+                            <button class="btn-disapprove" data-request-id="${requestId}">Disapprove</button>
+                        </td>
+                    `;
+                    requestsTableBody.appendChild(row);
+                });
+
+                document.querySelectorAll('.btn-approve').forEach(button => {
+                    button.addEventListener('click', handleApprove);
+                });
+                document.querySelectorAll('.btn-disapprove').forEach(button => {
+                    button.addEventListener('click', handleDisapprove);
+                });
+            }
+        });
+
+        // Handle Approve button click
+        async function handleApprove(e) {
+            const requestId = e.target.dataset.requestId;
+            const row = e.target.closest('tr');
+            
+            try {
+                const requestDocRef = doc(db, "requests", requestId);
+                await updateDoc(requestDocRef, { status: 'approved', approvalDate: new Date() });
+                
+                alert("Request sent to vendor.");
+                
+                row.remove();
+
+            } catch (error) {
+                console.error("Error approving request: ", error);
+                alert('Failed to approve request. Please try again.');
+            }
+        }
+
+        // Handle Disapprove button click
+        async function handleDisapprove(e) {
+            const requestId = e.target.dataset.requestId;
+            const row = e.target.closest('tr');
+            
+            try {
+                const requestDocRef = doc(db, "requests", requestId);
+                await updateDoc(requestDocRef, { status: 'disapproved', disapprovalDate: new Date() });
+                
+                alert('Request disapproved.');
+                row.remove();
+
+            } catch (error) {
+                console.error("Error disapproving request: ", error);
+                alert('Failed to disapprove request. Please try again.');
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Times New Roman', serif;
+            background-color: #eef2f6;
+            color: #333;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: auto;
+            text-align: center;
+        }
+
+        h1 {
+            color: #274c77;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .requests-table {
+            min-width: 100%;
+            white-space: nowrap;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 12px 15px;
+        }
+
+        thead tr {
+            background-color: #274c77;
+            color: #ffffff;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+        }
+
+        .btn-approve {
+            background-color: #28a745;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 9999px; /* This makes the buttons rounded */
+            transition: background-color 0.2s;
+            margin-right: 8px;
+        }
+
+        .btn-approve:hover {
+            background-color: #218838;
+        }
+
+        .btn-disapprove {
+            background-color: #dc3545;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 9999px; /* This makes the buttons rounded */
+            transition: background-color 0.2s;
+        }
+
+        .btn-disapprove:hover {
+            background-color: #c82333;
+        }
+
+        .placeholder-text {
+            color: #666;
+            font-style: italic;
+            margin-top: 50px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="flex items-center justify-center mb-6">
+        <i class="fa-solid fa-clipboard-check text-5xl text-[#274c77] mr-4"></i>
+        <h1>STOCK REQUESTS</h1>
+    </div>
+    <p id="requests-placeholder" class="placeholder-text">Loading requests...</p>
+    
+    <div class="table-container mt-8">
+        <table class="requests-table w-full text-sm text-left text-gray-500">
+            <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                <tr>
+                    <th scope="col" class="px-6 py-3">Item Name</th>
+                    <th scope="col" class="px-6 py-3">Quantity</th>
+                    <th scope="col" class="px-6 py-3">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="requests-table-body">
+                </tbody>
+        </table>
+    </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vendora | Bestsellers</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@400;500&display=swap');
+
+        :root {
+            --primary-color: #274c77; /* Dark Blue */
+            --secondary-color: #a3cef1; /* Lighter Blue */
+            --accent-color: #e7ecef; /* Light Gray */
+            --danger-color: #d9534f; /* Reddish for reorder */
+            --text-color: #3b3a30; /* Dark text */
+            --border-color: #6096ba; /* Blue border */
+            --light-bg: #ffffff; /* White card background */
+            --alert-bg: #e7ecef; /* Light Gray alert background */
+            --low-stock-bg: #a3cef1; /* Blue */
+            --profit-green: #28a745;
+            --loss-red: #dc3545;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            /* Background animation from STOCKS.html */
+            background: linear-gradient(-45deg, #e7ecef, #a3cef1, #6096ba, #274c77);
+            background-size: 400% 400%;
+            animation: gradientAnimation 15s ease infinite;
+        }
+
+        @keyframes gradientAnimation {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        .navbar {
+            background-color: var(--border-color); /* Lighter blue */
+            color: #ffffff;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 10px 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .navbar-item {
+            text-align: center;
+            font-size: 0.9em;
+        }
+        .navbar-item a {
+            color: #ffffff;
+            text-decoration: none;
+            display: block;
+            padding: 10px;
+            transition: background-color 0.2s;
+        }
+        .navbar-item a:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        .navbar-item i {
+            font-size: 1.5em;
+            margin-bottom: 5px;
+        }
+
+        .page-content {
+            margin-top: 80px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .main-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5em;
+            text-align: center;
+            color: var(--primary-color);
+            margin: 0 0 20px;
+            font-style: italic;
+        }
+        
+        /* New Styles for the filter */
+        .filter-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 500px;
+        }
+        
+        .filter-container label {
+            font-family: 'Roboto', sans-serif;
+            font-weight: 500;
+        }
+
+        .filter-container select {
+            padding: 8px 12px;
+            font-size: 1em;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            background-color: var(--light-bg);
+            cursor: pointer;
+            flex-grow: 1;
+        }
+
+        .bestsellers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            width: 100%;
+        }
+
+        .bestseller-card {
+            background-color: var(--light-bg);
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            padding: 20px;
+            text-align: center;
+            position: relative;
+            transition: transform 0.2s;
+        }
+        .bestseller-card:hover {
+            transform: translateY(-5px);
+        }
+        .bestseller-tag {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: var(--secondary-color);
+            color: var(--light-bg);
+            font-weight: bold;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8em;
+        }
+        .product-image-container {
+            width: 100%;
+            height: 150px;
+            background-color: var(--accent-color);
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2em;
+            color: #666;
+            font-style: italic;
+            overflow: hidden;
+        }
+        .product-image {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+        .product-name {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5em;
+            color: var(--primary-color);
+            margin: 0;
+        }
+        .units-sold {
+            font-size: 1.2em;
+            color: var(--text-color);
+            margin-top: 5px;
+        }
+
+        /* Footer Styles */
+        .footer {
+            background-color: var(--primary-color);
+            color: #ffffff;
+            padding: 40px 20px;
+            margin-top: 40px;
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .footer-section {
+            flex: 1;
+            padding: 10px;
+            min-width: 200px;
+        }
+
+        .footer-section h4 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.4em;
+            border-bottom: 2px solid #ffffff;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .footer-section ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .footer-section ul li {
+            margin-bottom: 10px;
+        }
+
+        .footer-section a {
+            color: #ffffff;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer-section a:hover {
+            color: #e0e0e0;
+        }
+
+        .footer-contact {
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+<div class="navbar">
+    <div class="navbar-item"><a href="ownerdash.html"><i class="fas fa-home"></i><br>home</a></div>
+    
+</div>
+
+<div class="page-content">
+    <h2 class="main-title">BESTSELLERS</h2>
+    
+    <div class="filter-container">
+        <label for="category-filter">View bestsellers in:</label>
+        <select id="category-filter">
+            <option value="All">All Categories</option>
+            <option value="Dairy">Dairy</option>
+            <option value="Bakery">Bakery</option>
+            <option value="Snacks">Snacks</option>
+            <option value="Beverages">Beverages</option>
+            <option value="fruits">Fruits</option>
+            <option value="vegetables">Vegetables</option>
+            <option value="Frozen">Frozen Foods</option>
+        </select>
+    </div>
+
+    <div class="bestsellers-grid" id="bestsellers-grid">
+        </div>
+</div>
+
+<footer class="footer">
+    <div class="footer-content">
+        <div class="footer-section">
+            <h4>Vendora</h4>
+            <ul>
+                <li><a href="#">About Us</a></li>
+                <li><a href="#">Careers</a></li>
+                <li><a href="#">Press</a></li>
+            </ul>
+        </div>
+        <div class="footer-section">
+            <h4>Help</h4>
+            <ul>
+                <li><a href="#">Contact Us</a></li>
+                <li><a href="#">FAQ</a></li>
+                <li><a href="#">Shipping</a></li>
+            </ul>
+        </div>
+        <div class="footer-section footer-contact">
+            <h4>Contact</h4>
+            <p>For any help, you may call us at</p>
+            <p>1800-267-4444</p>
+            <p>(Monday to Saturday, 8AM to 10PM)</p>
+        </div>
+    </div>
+</footer>
+    </script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyAA-0m6frTwFh712zJOQv2CcblX-7o6G9Q",
+        authDomain: "vendora-9c567.firebaseapp.com",
+        projectId: "vendora-9c567",
+        storageBucket: "vendora-9c567.firebasestorage.app",
+        messagingSenderId: "278942178451",
+        appId: "1:278942178451:web:cc16ba00fc671058178166",
+        measurementId: "G-Z59E9PHSYL"
+    };
+
+    const app = firebase.initializeApp(firebaseConfig);
+    const auth = app.auth();
+    const db = app.firestore();
+
+    // In-memory data store for products to avoid multiple Firebase reads
+    let allProducts = [];
+
+    // Map product names to categories
+    const categoryMap = {
+        'cavins milk packet': 'Dairy',
+        'aavin milk packet(500ml)': 'Dairy',
+        'Oreo biscuits': 'Bakery',
+        'Jimjam biscuits': 'Bakery',
+        'biscuit': 'Bakery',
+        'coca cola': 'Beverages',
+        'dairy milk chocolate': 'Snacks',
+        'munch chocolate': 'Snacks',
+        'Snickers chocolate': 'Snacks',
+        'Dairy day milk packet(500ml)': 'Dairy',
+        'frooti(200ml)': 'Beverages',
+        'apple(per kg)': 'fruits',
+        'banana(100gms)': 'fruits',
+        'Miranda(250ml)': 'Beverages'
+    };
+    
+    // Map product names to image URLs
+    const imageMap = {
+        'milk packet(500ml)': 'https://i.postimg.cc/k47tXm3s/cavins-milk.webp',
+        'Oreo biscuits': 'https://i.postimg.cc/gct0g6kw/or.webp',
+        'aavin milk packet(500ml)': 'https://i.postimg.cc/3wYCRWJj/aavi.webp',
+        'munch chocolate':'https://i.postimg.cc/fyGRbtZM/munch.webp',
+        'biscuit':'https://i.postimg.cc/63D0fKNY/bisci.webp',
+        'coca cola': 'https://i.postimg.cc/kgYtpD0Y/coca-cola.webp',
+        'dairy milk chocolate': 'https://i.postimg.cc/852Rns6g/dairy-milk.jpg',
+        'cavins milk packet': 'https://i.postimg.cc/zBN6cBSR/cavins-milk.webp',
+        'apple(per kg)': 'https://i.postimg.cc/dtCmbRsk/apple.webp',
+        'Miranda(250ml)':'https://i.postimg.cc/NfNwb2ZF/miri.webp',
+        'Jimjam biscuits':'https://i.postimg.cc/7P2DHLCQ/jimjam.webp',
+        'banana(100gms)': 'https://i.postimg.cc/FFLLz92w/banana.webp',
+        'Snickers chocolate':'https://i.postimg.cc/020TjK9Z/snickers.webp',
+        'Dairy day milk packet(500ml)':'https://i.postimg.cc/XJ5qFkvT/dairy-day.webp',
+        'frooti(200ml)':'https://i.postimg.cc/gkFSvzg5/frooti.webp'
+    };
+
+    async function fetchBestsellers() {
+        let salesData = {};
+
+        try {
+            const revenueRef = db.collection('stocks');
+            const revenueSnapshot = await revenueRef.get();
+
+            revenueSnapshot.forEach(doc => {
+                const entry = doc.data();
+                const item = entry.name;
+                const quantity = parseFloat(entry.quantity) || 0;
+
+                if (salesData[item]) {
+                    salesData[item] += quantity;
+                } else {
+                    salesData[item] = quantity;
+                }
+            });
+
+            const sortedItems = Object.entries(salesData).sort((a, b) => b[1] - a[1]);
+            
+            allProducts = sortedItems.map(([item, quantity]) => ({
+                item: item,
+                quantity: quantity,
+                category: categoryMap[item] || 'Other'
+            }));
+
+            renderBestsellers('All');
+
+        } catch (error) {
+            console.error("Error fetching bestsellers data:", error);
+            document.getElementById('bestsellers-grid').innerHTML = '<p>Error loading bestsellers. Please try again later.</p>';
+        }
+    }
+
+    function renderBestsellers(category) {
+        const bestsellersGrid = document.getElementById('bestsellers-grid');
+        bestsellersGrid.innerHTML = ''; 
+
+        const filteredProducts = category === 'All' ? allProducts : allProducts.filter(p => p.category === category);
+        filteredProducts.sort((a, b) => b.quantity - a.quantity); // Sort by quantity sold in descending order
+
+        filteredProducts.forEach((product, index) => {
+            const card = document.createElement('div');
+            card.classList.add('bestseller-card');
+
+            // This condition was updated to show the bestseller tag for the top item in any category
+            if (index === 0) { 
+                const bestsellerTag = document.createElement('div');
+                bestsellerTag.classList.add('bestseller-tag');
+                bestsellerTag.textContent = 'Bestseller';
+                card.appendChild(bestsellerTag);
+            }
+
+            const imageContainer = document.createElement('div');
+            imageContainer.classList.add('product-image-container');
+            const img = document.createElement('img');
+            img.classList.add('product-image');
+            img.src = imageMap[product.item] || 'https://i.postimg.cc/t4G3g4zJ/placeholder.png'; // Fallback to placeholder
+            img.alt = product.item;
+            imageContainer.appendChild(img);
+            card.appendChild(imageContainer);
+            
+            const productName = document.createElement('h3');
+            productName.classList.add('product-name');
+            productName.textContent = product.item;
+            card.appendChild(productName);
+
+            const unitsSold = document.createElement('p');
+            unitsSold.classList.add('units-sold');
+            unitsSold.textContent = `${product.quantity} units sold`;
+            card.appendChild(unitsSold);
+            
+            bestsellersGrid.appendChild(card);
+        });
+    }
+
+    // Add event listener to the dropdown
+    document.getElementById('category-filter').addEventListener('change', (event) => {
+        renderBestsellers(event.target.value);
+    });
+
+    // Initial data load
+    fetchBestsellers();
+</script>
+
+</body>
+</html>
